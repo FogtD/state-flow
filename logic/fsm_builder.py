@@ -1,5 +1,5 @@
-from machine_model import MachineModel
-from automata.fa.dfa import DFA
+from logic.machine_model import MachineModel
+from automata.fa.nfa import NFA
 from graph_items.edge_item import EdgeItem
 from graph_items.node_item import NodeItem
 
@@ -10,19 +10,21 @@ class FSMBuilder(MachineModel):
         # 'start state' : {'symbol': 'end state', 'symbol': 'end state'}
         # Basically you're building the transitions dictionary
         
-        dfa_transitions = {}
+        nfa_transitions = {}
         for node in self.nodes:
             curr_state_transitions = {}
             for edge in node.edges:
-                curr_state_transitions[edge.symbol] =  edge.node2.name
-            dfa_transitions[node.name] = curr_state_transitions
+                if edge.symbol not in curr_state_transitions:
+                    curr_state_transitions[edge.symbol] = set()
+                curr_state_transitions[edge.symbol].add(edge.node2.name)
+            nfa_transitions[node.name] = curr_state_transitions
         
-        dfa = DFA(
+        nfa = NFA(
             states = self.states,
             input_symbols = self.input_symbols,
-            transitions = dfa_transitions,
+            transitions = nfa_transitions,
             initial_state = self.initial_state,
             final_states = self.final_states
             )
-        return dfa
+        return nfa
         

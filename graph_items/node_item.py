@@ -43,22 +43,33 @@ class NodeItem(QGraphicsEllipseItem):
         super().paint(painter, option, widget)
 
         if self.is_initial:
-            path = QPainterPath()
-
-            # Draw an arrow coming from the left to indicate it's a starting node
-            path.moveTo(-self.RADIUS * 4, 0)
-            path.lineTo(-self.RADIUS * 2, 0)
-            path.lineTo(-self.RADIUS * 3, -self.RADIUS)
-            path.moveTo(-self.RADIUS * 2, 0)
-            path.lineTo(-self.RADIUS * 3, self.RADIUS)
-            
-            painter.setPen(QPen(Qt.darkGreen, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-            painter.drawPath(path)
+            # Save the current painter state
+            painter.save()
         
+            painter.setPen(QPen(Qt.darkGreen, 3, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+            painter.setBrush(Qt.NoBrush)  # Don't fill the arrow
+        
+            # Draw arrow line
+            painter.drawLine(QPointF(-self.RADIUS * 2.5, 0), QPointF(-self.RADIUS, 0))
+        
+            # Draw arrow head as separate lines
+            painter.drawLine(QPointF(-self.RADIUS, 0), QPointF(-self.RADIUS - 5, -5))
+            painter.drawLine(QPointF(-self.RADIUS, 0), QPointF(-self.RADIUS - 5, 5))
+        
+            # Restore the painter state
+            painter.restore()
+    
         if self.is_final:
+            # Save painter state
+            painter.save()
+        
             # Create a double circle if it's a final node
             painter.setPen(QPen(Qt.black, 3))
+            painter.setBrush(Qt.NoBrush)  # Don't fill the inner circle
             painter.drawEllipse(-self.RADIUS + 5, -self.RADIUS + 5, 2 * self.RADIUS - 10, 2 * self.RADIUS - 10)
+        
+            # Restore painter state
+            painter.restore()
     
     # This is called whenever QGraphicsItem is moved, so we'll have to update the edges associated with the moved node
     def itemChange(self, change, value):
