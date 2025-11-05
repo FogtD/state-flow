@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QGraphicsLineItem, QMenu, QGraphicsSimpleTextItem, QGraphicsItem
+﻿from PyQt5.QtWidgets import QGraphicsLineItem, QMenu, QGraphicsSimpleTextItem, QGraphicsItem
 from PyQt5.QtCore import QLineF, Qt, QPointF
 from PyQt5.QtGui import QPen, QPolygonF
 import math
@@ -40,6 +40,8 @@ class EdgeItem(QGraphicsLineItem):
 
     def set_symbol(self, symbol):
         self.symbol = symbol
+        if self.symbol == "":
+            self.symbol = "λ"
         self.text_item.setText(self.symbol)
         self.update_position()
 
