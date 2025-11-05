@@ -47,7 +47,6 @@ class EdgeItem(QGraphicsLineItem):
 
     def update_position(self):
         if self.node1 == self.node2:
-            # Self-loop case - keep existing behavior for now
             line = QLineF(self.node1.pos(), self.node2.pos())
             self.setLine(line)
             mid_point = self.node1.pos() + QPointF(0, -self.node1.RADIUS * 2)

@@ -20,19 +20,19 @@ class PlaceholderMachineScene(QGraphicsScene):
        
         # Set a node to be an initial node and reset the previous initial node to a regular node
     def set_initial_node(self, new_initial_node):
-        current_initial = None
+            current_initial = None
 
-        for item in self.items():
-            if isinstance(item, NodeItem) and item.is_initial:
-                current_initial = item
-                break
+            for item in self.items():
+                if isinstance(item, NodeItem) and item.is_initial:
+                    current_initial = item
+                    break
     
-        if current_initial and current_initial != new_initial_node:
-            current_initial.is_initial = False
-            current_initial.update()
+            if current_initial and current_initial != new_initial_node:
+                current_initial.is_initial = False
+                current_initial.update()
 
-        new_initial_node.is_initial = True
-        new_initial_node.update()
+            new_initial_node.is_initial = True
+            new_initial_node.update()
 
 class MachineEditorWindow(QMainWindow):
     def __init__(self):

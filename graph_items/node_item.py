@@ -29,6 +29,9 @@ class NodeItem(QGraphicsEllipseItem):
 
         self.name = name
         self.text_item = QGraphicsSimpleTextItem(self.name, self)
+        
+        if self.name == "q0":
+            self.is_initial = True
 
         font = QFont()
         font.setPointSize(10)
