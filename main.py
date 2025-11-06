@@ -1,9 +1,9 @@
 import sys
 from PyQt5.QtWidgets import QApplication
-from ui.main_window import MachineEditorWindow
+from ui.start_select_menu import StartupMenu
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = MachineEditorWindow()
-    window.show()
+    start_w = StartupMenu()
+    start_w.show()
     sys.exit(app.exec_())
