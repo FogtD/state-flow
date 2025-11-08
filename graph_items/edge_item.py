@@ -1,4 +1,4 @@
-﻿from PyQt5.QtWidgets import QGraphicsLineItem, QMenu, QGraphicsSimpleTextItem, QGraphicsItem
+﻿from PyQt5.QtWidgets import QGraphicsLineItem, QMenu, QGraphicsSimpleTextItem, QGraphicsItem, QInputDialog
 from PyQt5.QtCore import QLineF, Qt, QPointF
 from PyQt5.QtGui import QPen, QPolygonF
 import math
@@ -104,6 +104,7 @@ class EdgeItem(QGraphicsLineItem):
     def contextMenuEvent(self, event):
         menu = QMenu()
         delete_action = menu.addAction("Delete Transition")
+        change_sym_action = menu.addAction("Change Symbol")
         action = menu.exec_(event.screenPos())
 
         if action == delete_action:
@@ -118,6 +119,13 @@ class EdgeItem(QGraphicsLineItem):
             # if self.node1 != self.node2:
             #     if self in self.node2.edges:
             #         self.node2.edges.remove(self)
+        
+        if action == change_sym_action:
+            graph_view = self.scene().views()[0]
+            symbol, success = QInputDialog.getText(graph_view, "Edge Symbol", "Enter transition symbol:")
+            if success:
+                self.set_symbol(symbol)
+
 
     def removal(self):
         if self.scene():
