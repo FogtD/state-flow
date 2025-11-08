@@ -107,13 +107,27 @@ class EdgeItem(QGraphicsLineItem):
         action = menu.exec_(event.screenPos())
 
         if action == delete_action:
-            if self.scene():
-                self.scene().removeItem(self.text_item)
+            self.removal()
+            # if self.scene():
+            #     self.scene().removeItem(self.text_item)
 
-            self.scene().removeItem(self)
+            # self.scene().removeItem(self)
             
-            if self in self.node1.edges:
-                self.node1.edges.remove(self)
-            if self.node1 != self.node2:
-                if self in self.node2.edges:
-                    self.node2.edges.remove(self)
+            # if self in self.node1.edges:
+            #     self.node1.edges.remove(self)
+            # if self.node1 != self.node2:
+            #     if self in self.node2.edges:
+            #         self.node2.edges.remove(self)
+
+    def removal(self):
+        if self.scene():
+            self.scene().removeItem(self.text_item)
+
+        self.scene().removeItem(self)
+        
+        if self in self.node1.edges:
+            self.node1.edges.remove(self)
+        if self.node1 != self.node2:
+            if self in self.node2.edges:
+                self.node2.edges.remove(self)
+        

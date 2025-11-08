@@ -80,7 +80,7 @@ class NodeItem(QGraphicsEllipseItem):
             for edge in self.edges:
                 edge.update_position()
         return super().itemChange(change, value)
-
+        
     # Right click menu for designated a starting and final node, as well as deleting nodes
     def contextMenuEvent(self, event):
         menu = QMenu()
@@ -102,16 +102,17 @@ class NodeItem(QGraphicsEllipseItem):
         action = menu.exec_(event.screenPos())
 
         if action == delete_action:
-            for edge in list(self.edges):
-                other_node = edge.node1 if edge.node2 == self else edge.node2
+            self.removal()
+            # for edge in list(self.edges):
+            #     other_node = edge.node1 if edge.node2 == self else edge.node2
 
-                if edge in other_node.edges:
-                    other_node.edges.remove(edge)
+            #     if edge in other_node.edges:
+            #         other_node.edges.remove(edge)
 
-                if self.scene():
-                    self.scene().removeItem(edge)
+            #     if self.scene():
+            #         self.scene().removeItem(edge)
                     
-            self.scene().removeItem(self)
+            # self.scene().removeItem(self)
 
         elif action == rename_action:
             new_name, success = QInputDialog.getText(self, "Rename State", "Enter new name:", text=self.name)
@@ -122,11 +123,23 @@ class NodeItem(QGraphicsEllipseItem):
                 text_rect = self.text_item.boundingRect()
                 self.text_item.setPos(-text_rect.width() / 2, -text_rect.height() / 2)
                 self.update()
-
-
         elif action == start_action:
             if self.scene():
                 self.scene().set_initial_node(self)
         elif action == final_action:
                     self.is_final = not self.is_final
                     self.update()
+
+    def removal(self):
+        for edge in list(self.edges):
+            other_node = edge.node1 if edge.node2 == self else edge.node2
+
+            if edge in other_node.edges:
+                other_node.edges.remove(edge)
+
+            if self.scene():
+                edge.removal()
+        
+        scene_ref = self.scene()
+        self.scene().removeItem(self)
+        scene_ref.update()

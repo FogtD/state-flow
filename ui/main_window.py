@@ -47,11 +47,13 @@ class MachineEditorWindow(QMainWindow):
         self.node_button = QPushButton("Place Node")
         self.edge_button = QPushButton("Place Edge")
         self.test_button = QPushButton("Test String")
+        self.clear_button = QPushButton("Clear")
            
         # Sets the user's mouse mode to the correct type for placing edges/nodes
         self.cursor_button.clicked.connect(lambda: self.view.set_mode("none"))
         self.node_button.clicked.connect(lambda: self.view.set_mode("node_place"))
         self.edge_button.clicked.connect(lambda: self.view.set_mode("edge_start"))
+        self.clear_button.clicked.connect(self.clear_graph)
         self.test_button.clicked.connect(self.test_string)
         
         # Defining the layout for the node and edge buttons
@@ -60,6 +62,7 @@ class MachineEditorWindow(QMainWindow):
         control_layout.addWidget(self.node_button)
         control_layout.addWidget(self.edge_button)
         control_layout.addWidget(self.test_button)
+        control_layout.addWidget(self.clear_button)
         control_layout.addStretch(1)
 
         main_layout = QVBoxLayout()
@@ -82,16 +85,26 @@ class MachineEditorWindow(QMainWindow):
             return
     
         try:
-            # Build the DFA
+            # Build the FSM
             builder = FSMBuilder(nodes, edges)
-            self.dfa = builder.build()
+            self.nfa = builder.build()
         
             # Test the user's string
             test_input, success = QInputDialog.getText(self, "Test String", "Enter string to test:")
             if success:
-                result = self.dfa.accepts_input(test_input)
+                result = self.nfa.accepts_input(test_input)
                 status = "ACCEPTED" if result else "REJECTED"
                 QMessageBox.information(self, "Result", f"String '{test_input}' is {status}")
             
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Error: {str(e)}")
+
+    def clear_graph(self):
+        #By deleting all nodes all edges connected for each will be deleted too
+        for item in self.scene.items():
+            if isinstance(item, NodeItem):
+                item.removal()
+        self.scene.node_counter = 0 
+
+
+            
