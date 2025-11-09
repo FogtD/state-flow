@@ -1,6 +1,6 @@
 from os import name
 from PyQt5.QtWidgets import QGraphicsEllipseItem, QGraphicsItem, QMenu, QAction, QGraphicsSimpleTextItem, QInputDialog
-from PyQt5.QtCore import Qt, QPointF
+from PyQt5.QtCore import Qt, QPointF, QRectF
 from PyQt5.QtGui import QPen, QPainterPath, QFont, QBrush
 
 class NodeItem(QGraphicsEllipseItem):
@@ -20,8 +20,11 @@ class NodeItem(QGraphicsEllipseItem):
         # Nodes will be on top, above edges
         self.setZValue(1)
 
-        # Will contain the list of edges associated with a node
+        # Will contain the list of all edges associated with a node, useful for cleanups
         self.edges = []
+
+        # Will contain the list of all outgoing edges associated with a node, useful for traversal
+        self.out_edges = []
 
         # Determines if a node is a final or initial node
         self.is_initial = False
@@ -79,6 +82,7 @@ class NodeItem(QGraphicsEllipseItem):
         if change == QGraphicsItem.ItemPositionHasChanged:
             for edge in self.edges:
                 edge.update_position()
+            self.update()
         return super().itemChange(change, value)
         
     # Right click menu for designated a starting and final node, as well as deleting nodes
@@ -103,17 +107,6 @@ class NodeItem(QGraphicsEllipseItem):
 
         if action == delete_action:
             self.removal()
-            # for edge in list(self.edges):
-            #     other_node = edge.node1 if edge.node2 == self else edge.node2
-
-            #     if edge in other_node.edges:
-            #         other_node.edges.remove(edge)
-
-            #     if self.scene():
-            #         self.scene().removeItem(edge)
-                    
-            # self.scene().removeItem(self)
-
         elif action == rename_action:
             new_name, success = QInputDialog.getText(self, "Rename State", "Enter new name:", text=self.name)
             if success and new_name:
@@ -127,8 +120,8 @@ class NodeItem(QGraphicsEllipseItem):
             if self.scene():
                 self.scene().set_initial_node(self)
         elif action == final_action:
-                    self.is_final = not self.is_final
-                    self.update()
+            self.is_final = not self.is_final
+            self.update()
 
     def removal(self):
         for edge in list(self.edges):
@@ -140,6 +133,7 @@ class NodeItem(QGraphicsEllipseItem):
             if self.scene():
                 edge.removal()
         
-        scene_ref = self.scene()
         self.scene().removeItem(self)
-        scene_ref.update()
+
+    def boundingRect(self):
+        return QRectF(-self.RADIUS * 2.5, -self.RADIUS, 80, 40)

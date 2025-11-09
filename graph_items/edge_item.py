@@ -25,6 +25,9 @@ class EdgeItem(QGraphicsLineItem):
         # self.arrow_head = QGraphicsPolygonF()
 
         self.node1.edges.append(self)
+        self.node1.out_edges.append(self)
+
+        #Ensure node2, target node, is aware of one of its in-edges
         if self.node1 != self.node2:
             self.node2.edges.append(self)
     
@@ -109,16 +112,6 @@ class EdgeItem(QGraphicsLineItem):
 
         if action == delete_action:
             self.removal()
-            # if self.scene():
-            #     self.scene().removeItem(self.text_item)
-
-            # self.scene().removeItem(self)
-            
-            # if self in self.node1.edges:
-            #     self.node1.edges.remove(self)
-            # if self.node1 != self.node2:
-            #     if self in self.node2.edges:
-            #         self.node2.edges.remove(self)
         
         if action == change_sym_action:
             graph_view = self.scene().views()[0]
@@ -131,10 +124,11 @@ class EdgeItem(QGraphicsLineItem):
         if self.scene():
             self.scene().removeItem(self.text_item)
 
-        self.scene().removeItem(self)
+        self.scene().removeItem(self)      
         
         if self in self.node1.edges:
             self.node1.edges.remove(self)
+            self.node1.out_edges.remove(self)
         if self.node1 != self.node2:
             if self in self.node2.edges:
                 self.node2.edges.remove(self)

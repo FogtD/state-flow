@@ -9,7 +9,7 @@ class FSMBuilder(MachineModel):
         nfa_transitions = {}
         for node in self.nodes:
             curr_state_transitions = {}
-            for edge in node.edges:
+            for edge in node.out_edges:
                 edge_sym = edge.symbol
 
                 #Convert lambda to empty string for NFA machine to handle
