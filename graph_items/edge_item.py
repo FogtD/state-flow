@@ -123,8 +123,7 @@ class EdgeItem(QGraphicsLineItem):
     def removal(self):
         if self.scene():
             self.scene().removeItem(self.text_item)
-
-        self.scene().removeItem(self)      
+            self.scene().removeItem(self)      
         
         if self in self.node1.edges:
             self.node1.edges.remove(self)

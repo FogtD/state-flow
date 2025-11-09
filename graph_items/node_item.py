@@ -82,7 +82,6 @@ class NodeItem(QGraphicsEllipseItem):
         if change == QGraphicsItem.ItemPositionHasChanged:
             for edge in self.edges:
                 edge.update_position()
-            self.update()
         return super().itemChange(change, value)
         
     # Right click menu for designated a starting and final node, as well as deleting nodes
@@ -125,15 +124,10 @@ class NodeItem(QGraphicsEllipseItem):
 
     def removal(self):
         for edge in list(self.edges):
-            other_node = edge.node1 if edge.node2 == self else edge.node2
+            edge.removal()
 
-            if edge in other_node.edges:
-                other_node.edges.remove(edge)
-
-            if self.scene():
-                edge.removal()
-        
-        self.scene().removeItem(self)
+        if self.scene():
+            self.scene().removeItem(self)
 
     def boundingRect(self):
         return QRectF(-self.RADIUS * 2.5, -self.RADIUS, 80, 40)

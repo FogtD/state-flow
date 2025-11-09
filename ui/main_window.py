@@ -5,6 +5,7 @@ from ui.graph_view import GraphView
 from graph_items.node_item import NodeItem
 from graph_items.edge_item import EdgeItem
 from logic.fsm_builder import FSMBuilder
+from automata.base.exceptions import InitialStateError
 
 class PlaceholderMachineScene(QGraphicsScene):
     def __init__(self, *args, **kwargs):
@@ -95,7 +96,8 @@ class MachineEditorWindow(QMainWindow):
                 result = self.nfa.accepts_input(test_input)
                 status = "ACCEPTED" if result else "REJECTED"
                 QMessageBox.information(self, "Result", f"String '{test_input}' is {status}")
-            
+        except InitialStateError as e:
+            QMessageBox.warning(self, "Error", "Initial state not set")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Error: {str(e)}")
 
