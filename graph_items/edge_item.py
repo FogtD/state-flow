@@ -36,6 +36,11 @@ class EdgeItem(QGraphicsLineItem):
         # This function actually draws the line and will be called whenever an edge is created or a node is moved that already has an edge
         self.update_position()
 
+        # If the edge we're trying to add has other "sibling" edges, make sure we update them too
+        for edge in self.node1.out_edges:
+            if edge.node2 == self.node2 and edge != self:
+                edge.update_position()
+
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemSceneChange and value:
             value.addItem(self.text_item)
@@ -75,10 +80,49 @@ class EdgeItem(QGraphicsLineItem):
             # Calculate midpoint for text
             mid_point = (start_point + end_point) / 2
 
-        # Position text above the line
+        # Sibling edges have the same start and end nodes
+        sibling_edges = [edge for edge in self.node1.out_edges if edge.node2 == self.node2]
+
+        try:
+            my_index = sibling_edges.index(self)
+        except ValueError:
+            my_index = 0
+
+        num_siblings = len(sibling_edges)
+        
         text_rect = self.text_item.boundingRect()
-        offset_pos = mid_point - QPointF(text_rect.width() / 2, text_rect.height() + 5)
+
+        vertical_spacing = text_rect.height() + 2
+
+        if self.node1 == self.node2:
+            # Self-loop: Simple vertical stacking
+            base_offset_pos = mid_point - QPointF(text_rect.width() / 2, text_rect.height() + 5)
+            # Stack downwards (positive Y)
+            stacking_offset = QPointF(0, my_index * vertical_spacing) 
+            offset_pos = base_offset_pos + stacking_offset
+        else:
+            # Regular edge: Offset perpendicular to the line
+            line = self.line()
+            angle = math.atan2(line.dy(), line.dx())
+            # Get perpendicular angle ("above" the line)
+            perp_angle = angle - math.pi / 2 
+            
+            # Unit vector pointing "above"
+            perp_vector = QPointF(math.cos(perp_angle), math.sin(perp_angle))
+            
+            # Base position: centered on the midpoint
+            base_text_pos = mid_point - QPointF(text_rect.width() / 2, text_rect.height() / 2)
+            
+            # Total distance from the line:
+            # 5 pixels base, plus the sibling offset
+            total_offset_distance = 5 + (my_index * vertical_spacing)
+            
+            # Final position
+            offset_pos = base_text_pos + (perp_vector * total_offset_distance)
+            
         self.text_item.setPos(offset_pos)
+
+       
 
     def paint(self, painter, option, widget):
         # Draw the line
@@ -121,6 +165,11 @@ class EdgeItem(QGraphicsLineItem):
 
 
     def removal(self):
+        try:
+            siblings = [edge for edge in self.node1.out_edges if edge.node2 == self.node2 and edge != self]
+        except AttributeError:
+            siblings = []
+
         if self.scene():
             self.scene().removeItem(self.text_item)
             self.scene().removeItem(self)      
@@ -131,4 +180,7 @@ class EdgeItem(QGraphicsLineItem):
         if self.node1 != self.node2:
             if self in self.node2.edges:
                 self.node2.edges.remove(self)
+
+        for edge in siblings:
+            edge.update_position()
         
