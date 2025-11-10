@@ -6,10 +6,10 @@ from graph_items.node_item import NodeItem
 
 
 class EdgeItem(QGraphicsLineItem):
-    def __init__(self, node1: NodeItem, node2: NodeItem):
+    def __init__(self, src_node: NodeItem, target_node: NodeItem):
         super().__init__()
-        self.node1 = node1
-        self.node2 = node2
+        self.src_node = src_node
+        self.target_node = target_node
 
         # Edges will be in black with thickness 2
         self.setPen(QPen(Qt.black, 2))
@@ -24,12 +24,12 @@ class EdgeItem(QGraphicsLineItem):
         # Remove this line:
         # self.arrow_head = QGraphicsPolygonF()
 
-        self.node1.edges.append(self)
-        self.node1.out_edges.append(self)
+        self.src_node.edges.append(self)
+        self.src_node.out_edges.append(self)
 
-        #Ensure node2, target node, is aware of one of its in-edges
-        if self.node1 != self.node2:
-            self.node2.edges.append(self)
+        #Ensure target node, is aware of one of its in-edges
+        if self.src_node != self.target_node:
+            self.target_node.edges.append(self)
     
         self.update_position()
         
@@ -37,8 +37,8 @@ class EdgeItem(QGraphicsLineItem):
         self.update_position()
 
         # If the edge we're trying to add has other "sibling" edges, make sure we update them too
-        for edge in self.node1.out_edges:
-            if edge.node2 == self.node2 and edge != self:
+        for edge in self.src_node.out_edges:
+            if edge.target_node == self.target_node and edge != self:
                 edge.update_position()
 
     def itemChange(self, change, value):
@@ -54,25 +54,25 @@ class EdgeItem(QGraphicsLineItem):
         self.update_position()
 
     def update_position(self):
-        if self.node1 == self.node2:
-            line = QLineF(self.node1.pos(), self.node2.pos())
+        if self.src_node == self.target_node:
+            line = QLineF(self.src_node.pos(), self.target_node.pos())
             self.setLine(line)
-            mid_point = self.node1.pos() + QPointF(0, -self.node1.RADIUS * 2)
+            mid_point = self.src_node.pos() + QPointF(0, -self.src_node.RADIUS * 2)
         else:
             # Calculate line from center to center
-            line = QLineF(self.node1.pos(), self.node2.pos())
+            line = QLineF(self.src_node.pos(), self.target_node.pos())
             
             # Shorten the line so it starts and ends at the edge of the circles
             angle = math.atan2(line.dy(), line.dx())
             
             start_point = QPointF(
-                self.node1.pos().x() + self.node1.RADIUS * math.cos(angle),
-                self.node1.pos().y() + self.node1.RADIUS * math.sin(angle)
+                self.src_node.pos().x() + self.src_node.RADIUS * math.cos(angle),
+                self.src_node.pos().y() + self.src_node.RADIUS * math.sin(angle)
             )
             
             end_point = QPointF(
-                self.node2.pos().x() - self.node2.RADIUS * math.cos(angle),
-                self.node2.pos().y() - self.node2.RADIUS * math.sin(angle)
+                self.target_node.pos().x() - self.target_node.RADIUS * math.cos(angle),
+                self.target_node.pos().y() - self.target_node.RADIUS * math.sin(angle)
             )
             
             self.setLine(QLineF(start_point, end_point))
@@ -80,8 +80,8 @@ class EdgeItem(QGraphicsLineItem):
             # Calculate midpoint for text
             mid_point = (start_point + end_point) / 2
 
-        # Sibling edges have the same start and end nodes
-        sibling_edges = [edge for edge in self.node1.out_edges if edge.node2 == self.node2]
+        # Sibling edges have the same source and target nodes
+        sibling_edges = [edge for edge in self.src_node.out_edges if edge.target_node == self.target_node]
 
         try:
             my_index = sibling_edges.index(self)
@@ -94,7 +94,7 @@ class EdgeItem(QGraphicsLineItem):
 
         vertical_spacing = text_rect.height() + 2
 
-        if self.node1 == self.node2:
+        if self.src_node == self.target_node:
             # Self-loop: Simple vertical stacking
             base_offset_pos = mid_point - QPointF(text_rect.width() / 2, text_rect.height() + 5)
             # Stack downwards (positive Y)
@@ -128,7 +128,7 @@ class EdgeItem(QGraphicsLineItem):
         # Draw the line
         super().paint(painter, option, widget)
         
-        if self.node1 != self.node2:
+        if self.src_node != self.target_node:
             # Draw arrow head
             line = self.line()
             angle = math.atan2(-line.dy(), line.dx())
@@ -166,7 +166,7 @@ class EdgeItem(QGraphicsLineItem):
 
     def removal(self):
         try:
-            siblings = [edge for edge in self.node1.out_edges if edge.node2 == self.node2 and edge != self]
+            siblings = [edge for edge in self.src_node.out_edges if edge.target_node == self.target_node and edge != self]
         except AttributeError:
             siblings = []
 
@@ -174,12 +174,12 @@ class EdgeItem(QGraphicsLineItem):
             self.scene().removeItem(self.text_item)
             self.scene().removeItem(self)      
         
-        if self in self.node1.edges:
-            self.node1.edges.remove(self)
-            self.node1.out_edges.remove(self)
-        if self.node1 != self.node2:
-            if self in self.node2.edges:
-                self.node2.edges.remove(self)
+        if self in self.src_node.edges:
+            self.src_node.edges.remove(self)
+            self.src_node.out_edges.remove(self)
+        if self.src_node != self.target_node:
+            if self in self.target_node.edges:
+                self.target_node.edges.remove(self)
 
         for edge in siblings:
             edge.update_position()

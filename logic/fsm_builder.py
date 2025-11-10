@@ -18,7 +18,7 @@ class FSMBuilder(MachineModel):
 
                 if edge_sym not in curr_state_transitions:
                     curr_state_transitions[edge_sym] = set()
-                curr_state_transitions[edge_sym].add(edge.node2.name)
+                curr_state_transitions[edge_sym].add(edge.target_node.name)
             nfa_transitions[node.name] = curr_state_transitions
         
         nfa = NFA(
