@@ -15,8 +15,9 @@ class NodeItem(QGraphicsEllipseItem):
         # Set the relevant internal variables to let the user move the node around
         self.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemSendsGeometryChanges)
 
-        # Fill the node in blue
-        self.setBrush(Qt.blue)
+        # Default nodes will be filled in blue
+        self.default_brush = QBrush(Qt.blue)
+        self.setBrush(self.default_brush)
         # Nodes will be on top, above edges
         self.setZValue(1)
 
@@ -44,6 +45,14 @@ class NodeItem(QGraphicsEllipseItem):
         text_rect = self.text_item.boundingRect()
         self.text_item.setPos(-text_rect.width() / 2, -text_rect.height() / 2)
 
+    # Changes the color of a node
+    def set_highlight(self, brush: QBrush):
+        self.setBrush(brush)
+        self.update()
+        
+    def reset_highlight(self):
+        self.setBrush(self.default_brush)
+        self.update()
 
     def paint(self, painter, option, widget):
         super().paint(painter, option, widget)
