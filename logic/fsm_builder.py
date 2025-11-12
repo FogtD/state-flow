@@ -29,8 +29,5 @@ class FSMBuilder(MachineModel):
             final_states = self.final_states
             )
 
-        ##For debug use - delete later
-        for t in nfa.iter_transitions():
-            print(t)
         return nfa
         
