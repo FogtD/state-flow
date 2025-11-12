@@ -16,7 +16,7 @@ class NodeItem(QGraphicsEllipseItem):
         self.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemSendsGeometryChanges)
 
         # Default nodes will be filled in blue
-        self.default_brush = QBrush(Qt.blue)
+        self.default_brush = QBrush(Qt.cyan)
         self.setBrush(self.default_brush)
         # Nodes will be on top, above edges
         self.setZValue(1)
@@ -40,7 +40,7 @@ class NodeItem(QGraphicsEllipseItem):
         font = QFont()
         font.setPointSize(10)
         self.text_item.setFont(font)
-        self.text_item.setBrush(Qt.white)
+        self.text_item.setBrush(Qt.black)
 
         text_rect = self.text_item.boundingRect()
         self.text_item.setPos(-text_rect.width() / 2, -text_rect.height() / 2)

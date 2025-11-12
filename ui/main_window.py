@@ -8,6 +8,7 @@ from graph_items.node_item import NodeItem
 from graph_items.edge_item import EdgeItem
 from logic.fsm_builder import FSMBuilder
 from automata.base.exceptions import InitialStateError
+from automata.base.exceptions import RejectionException
 
 HIGHLIGHT_COLORS = {
     "active": QBrush(Qt.yellow),
@@ -155,26 +156,19 @@ class MachineEditorWindow(QMainWindow):
         nodes = [item for item in self.scene.items() if isinstance(item, NodeItem)]
         edges = [item for item in self.scene.items() if isinstance(item, EdgeItem)]
     
-        # Make sure there are nodes for building the machine
-        if not nodes:
-            QMessageBox.warning(self, "Error", "No states in the automaton!")
+
+        self.nfa = self.build_nfa()
+
+        if self.nfa is None:
             return
+
+        #Test the user's string
+        test_input, success = QInputDialog.getText(self, "Test String", "Enter string to test:")
+        if success:
+            result = self.nfa.accepts_input(test_input)
+            status = "ACCEPTED" if result else "REJECTED"
+            QMessageBox.information(self, "Result", f"String '{test_input}' is {status}")
     
-        try:
-            # Build the FSM
-            builder = FSMBuilder(nodes, edges)
-            self.nfa = builder.build()
-        
-            # Test the user's string
-            test_input, success = QInputDialog.getText(self, "Test String", "Enter string to test:")
-            if success:
-                result = self.nfa.accepts_input(test_input)
-                status = "ACCEPTED" if result else "REJECTED"
-                QMessageBox.information(self, "Result", f"String '{test_input}' is {status}")
-        except InitialStateError as e:
-            QMessageBox.warning(self, "Error", "Initial state not set")
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Error: {str(e)}")
 
     def build_nfa(self):
         nodes = self.scene.get_all_nodes()
@@ -183,6 +177,7 @@ class MachineEditorWindow(QMainWindow):
         try:
             builder = FSMBuilder(nodes, edges)
             return builder.build()
+        #Will catch when no nodes in graph as well
         except InitialStateError as e:
             QMessageBox.warning(self, "Error", "Initial state not set")
             return None
@@ -192,13 +187,21 @@ class MachineEditorWindow(QMainWindow):
 
     def start_step_test(self):
         self.reset_step_test()
+
         self.step_test_nfa = self.build_nfa()
+        
+        if self.step_test_nfa is None:
+            return
+
+        #Deslect any nodes on screen
+        self.scene.clearSelection()
 
         # Get the user's string and make sure there was no error
         test_input, success = QInputDialog.getText(self, "Test String", "Enter string to test")
         if not success:
             return
-
+        
+        self._setGraphModifiable(False)
         self.step_test_string = test_input
         self.step_test_index = 0
 
@@ -227,7 +230,7 @@ class MachineEditorWindow(QMainWindow):
             self.reset_all_node_highlights()
             self.highlight_nodes(self.current_step_states, "active")
             self.update_string_label()
-        except StopIteration:
+        except (StopIteration, RejectionException):
             # This would mean the iterator has nothing left to continue to, meaning the string is exhausted
             self.next_step_button.setEnabled(False)
             self.reset_all_node_highlights()
@@ -243,12 +246,19 @@ class MachineEditorWindow(QMainWindow):
             else:
                 # If none of the current states are final states, reject them all
                 self.highlight_nodes(self.current_step_states, "reject")
-                set.step_string_label.setText("<b>Test Complete. String REJECTED</b>")
+                self.step_string_label.setText("<b>Test Complete. String REJECTED</b>")
+
+    #To prevent graph being modified during test string animation and to reactivate after
+    def _setGraphModifiable(self, is_modifiable):
+        self.view.setEnabled(is_modifiable)
+        self.clear_button.setEnabled(is_modifiable)
+
 
     def reset_step_test(self):
         self.step_test_widget.hide()
 
         self.next_step_button.setEnabled(True)
+        self._setGraphModifiable(True)
 
         self.step_test_nfa = None
         self.step_test_iterator = None
