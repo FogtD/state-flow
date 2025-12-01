@@ -131,7 +131,7 @@ class EdgeItem(QGraphicsLineItem):
         if self.src_node != self.target_node:
             # Draw arrow head
             line = self.line()
-            angle = math.atan2(-line.dy(), line.dx())
+            angle = math.atan2(line.dy(), line.dx())
             
             arrow_size = 10
             arrow_p1 = line.p2() - QPointF(
